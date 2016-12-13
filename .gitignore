@@ -1,0 +1,8 @@
+/.tox
+/venv
+*.py[co]
+/build
+/dist
+/.cache
+/.eggs
+*.egg-info
