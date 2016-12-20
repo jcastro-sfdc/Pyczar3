@@ -27,7 +27,8 @@ class Pyczar3:
         self.version = "1.0"
         self.endpoint = "getSecret"
         self._vault_name = None
-        self._key_location = None
+        self._private_key_path = None
+        self._certificate_key_path = None
 
     @property
     def vault(self) -> str:
@@ -47,24 +48,41 @@ class Pyczar3:
         self._vault_name = vault
 
     @property
-    def key_location(self) -> str:
+    def private_key_path(self) -> str:
         """
         The path to the private keys.
         :return: Path to the private keys.
         """
-        return self._key_location
+        return self._private_key_path
 
-    @key_location.setter
-    def key_location(self, key_path: str):
+    @private_key_path.setter
+    def private_key_path(self, key_path: str):
         """
-        A path on disk to the key folder.
+        A file on disk.
 
-        inside this folder should be a ``meta`` file and one or more keys, numbered sequentially
-        from ``1``
         :param key_path: Path to the keys.
         :return: None
         """
-        self._key_location = key_path
+        self._private_key_path = key_path
+
+    @property
+    def certificate_key_path(self) -> str:
+        """
+        The path to the private keys.
+        :return: Path to the private keys.
+        """
+        return self._certificate_key_path
+
+    @certificate_key_path.setter
+    def certificate_key_path(self, key_path: str):
+        """
+        A file on disk.
+
+        :param key_path: Path to the keys.
+        :return: None
+        """
+        self._certificate_key_path = key_path
+
 
     def get_secret(self, secret_name: str) -> str:
         """
@@ -79,7 +97,18 @@ class Pyczar3:
         body = {'vaultName': self._vault_name,
                 'secretName': secret_name}
         self.logger.debug('Fetching secret "%s" from vault "%s"', secret_name, self._vault_name)
-        req = requests.post(url, json=body)
+
+        # You can also specify a local cert to use as client side certificate, as a single file
+        # (containing the private key and the certificate) or as a tuple of both file's path:
+
+        # >>> requests.get('https://kennethreitz.com', cert=('/path/client.cert', '/path/client.key'))
+        # <Response [200]>
+
+        # or persistent:
+        # s = requests.Session()
+        # s.cert = '/path/client.cert'
+
+        req = requests.post(url, json=body, cert=(self.certificate_key_path, self.private_key_path))
 
         if req.status_code == 200:
             resp = req.json()
