@@ -3,5 +3,5 @@
 [run]
 source = pyczar3
 omit =
-    test_*.py
+    /tests
     pyczar3/cli/main.py
