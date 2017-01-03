@@ -4,6 +4,4 @@
 source = pyczar3
 omit =
     test_*.py
-
-[report]
-fail_under = 80
+    pyczar3/cli/main.py
