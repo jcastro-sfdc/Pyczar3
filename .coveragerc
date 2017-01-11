@@ -3,7 +3,5 @@
 [run]
 source = pyczar3
 omit =
-    test_*.py
-
-[report]
-fail_under = 80
+    /tests
+    pyczar3/cli/main.py

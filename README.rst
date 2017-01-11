@@ -16,5 +16,5 @@ your wheel is in ``dist/pyczar3-{{version}}-py2.py3-none-any.whl``
 Testing this
 ------------
 
-    python setup.py test
+    tox
 

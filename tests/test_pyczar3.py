@@ -8,7 +8,7 @@ class TestPyczar3:
 
     def test_get_password_without_vault(self):
         p = pyczar3.Pyczar3()
-        with pytest.raises(RuntimeError) as e_info:
+        with pytest.raises(RuntimeError):
             p.get_secret('MySecret')
 
     @responses.activate
@@ -26,12 +26,11 @@ class TestPyczar3:
 
     def test_properties(self):
         p = pyczar3.Pyczar3()
-        assert p.key_location == None
-        assert p.vault == None
+        assert p.key_location is None
+        assert p.vault is None
 
         p.vault = 'Vault'
         assert p.vault == 'Vault'
 
         p.key_location = './keys'
         assert p.key_location == './keys'
-
