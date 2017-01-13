@@ -5,25 +5,29 @@ from base64 import urlsafe_b64encode
 import pytest
 import responses
 from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import hashes, padding
-from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes, padding, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
-from cryptography.hazmat.primitives.ciphers import Cipher
-from cryptography.hazmat.primitives.ciphers import algorithms, modes
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 import pyczar3
 
 
 class TestPczr3WithCertificates:
 
-    def __init__(self):
+    def setup_method(self):
         self.cert_path = 'tests/test_rsa.cer'
         self.key_path = 'tests/test_rsa.key'
         self.vault = 'FakeVault'
         self.secret_name = 'Secret'
         self.secret_value = 'abra cadabra'
         self.server_response = None
+
+        public_pem, private_pem, self.server_response = self.make_test_files()
+        with open(self.cert_path, 'w') as cert_file:
+            cert_file.write(public_pem)
+        with open(self.key_path, 'w') as private_key_file:
+            private_key_file.write(private_pem)
 
     def make_test_files(self):
         # Key - Base64Url(Encrypt_pubkey(JSONString)) - JSON string containing two fields:
@@ -80,13 +84,6 @@ class TestPczr3WithCertificates:
                                              format=serialization.PublicFormat.SubjectPublicKeyInfo)
 
         return public_pem.decode('ascii'), private_pem.decode('ascii'), server_response
-
-    def setup_method(self):
-        public_pem, private_pem, self.server_response = self.make_test_files()
-        with open(self.cert_path, 'w') as cert_file:
-            cert_file.write(public_pem)
-        with open(self.key_path, 'w') as private_key_file:
-            private_key_file.write(private_pem)
 
     def teardown_method(self):
         os.remove(self.cert_path)
