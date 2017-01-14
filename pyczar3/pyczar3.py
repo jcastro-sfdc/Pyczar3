@@ -1,3 +1,6 @@
+"""
+A VaultCzar/Secret Service client.
+"""
 import json
 import logging
 from base64 import urlsafe_b64decode
@@ -11,9 +14,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-__author__ = "Jason Schroeder"
-__email__ = "jschroeder@salesforce.com"
-
 
 class Pyczar3:
     """
@@ -24,9 +24,6 @@ class Pyczar3:
         self.logger = logging.getLogger(__name__)
         self.base_url = server_url
         self.port = server_port
-        self.api = "vaultczar/api"
-        self.version = "1.0"
-        self.endpoint = "getSecretBySubscriber"
         self._vault_name = None
         self._private_key_path = None
         self._certificate_path = None
@@ -92,7 +89,7 @@ class Pyczar3:
         """
         if self._vault_name is None:
             raise RuntimeError('Please set a vault name first')
-        url = "%s:%s/%s/%s/%s" % (self.base_url, self.port, self.api, self.version, self.endpoint)
+        url = "%s:%s/%s" % (self.base_url, self.port, "vaultczar/api/1.0/getSecretBySubscriber")
         self.logger.debug(url)
         body = {'vaultName': self._vault_name,
                 'secretName': secret_name}
@@ -107,7 +104,8 @@ class Pyczar3:
             # Key - Base64Url(Encryptpubkey(JSONString)) - JSON string containing two fields:
             #     Key - The randomly generated symmetric key, base64Urled
             #     IV - The randomly generated IV for symmetric encryption, base64Urled
-            # Secret - Base64Url(EncryptSymmetricKey(JSONString)) JSON string contains the following fields:
+            # Secret - Base64Url(EncryptSymmetricKey(JSONString)) JSON string contains the
+            #          following fields:
             #     secretID - The URI of the requested secret
             #     Secret - The secret
             #     vaultName - Name of the vault returned by the server
@@ -115,9 +113,9 @@ class Pyczar3:
             if 'Status' in resp and resp['Status'] == 'success':
                 # Key is an AES key which in turn is encrypted
                 # using mutual TLS's public key.
-                (symmetric_key, iv) = self._get_aes_key(resp['Key'])
+                (symmetric_key, initialization_vector) = self._get_aes_key(resp['Key'])
                 secretbytes = urlsafe_b64decode(resp['Secret'])
-                plainbytes = self._aes_decrypt(secretbytes, symmetric_key, iv)
+                plainbytes = self._aes_decrypt(secretbytes, symmetric_key, initialization_vector)
                 plainjson = json.loads(plainbytes.decode('utf-8'))
                 cleartext_secret = plainjson['Secret']
                 # returned_vault_name = plainjson["vaultName"]
@@ -152,31 +150,27 @@ class Pyczar3:
 
         key_dictionary = json.loads(plaintext.decode('ascii'))
         symmetric_key = urlsafe_b64decode(key_dictionary['Key'])
-        iv = urlsafe_b64decode(key_dictionary['IV'])
-        return symmetric_key, iv
+        initialization_vector = urlsafe_b64decode(key_dictionary['IV'])
+        return symmetric_key, initialization_vector
 
     @staticmethod
-    def _aes_decrypt(msg: bytes, symm_key: bytes, iv: bytes) -> bytes:
+    def _aes_decrypt(msg: bytes, symm_key: bytes, initialization_vector: bytes) -> bytes:
         """
         Decrypt some bytes.
         :param msg:
         :param_type msg: bytes
         :param symm_key: Symmetric Key
-        :param iv: Initialization Vector
+        :param initialization_vector: Initialization Vector
         :return: plain text
         """
-        logging.debug('initializing AES-%d key with IV of %d bytes', len(symm_key*8), len(iv))
-        cipher = Cipher(algorithms.AES(symm_key), modes.CBC(iv), backend=default_backend())
+        logging.debug('initializing AES-%d key with IV of %d bytes',
+                      len(symm_key*8),
+                      len(initialization_vector))
+        cipher = Cipher(algorithms.AES(symm_key),
+                        modes.CBC(initialization_vector),
+                        backend=default_backend())
         decryptor = cipher.decryptor()
         padded_data = decryptor.update(msg) + decryptor.finalize()
         unpadder = padding.PKCS7(128).unpadder()
         data = unpadder.update(padded_data) + unpadder.finalize()
         return data
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
-    czar = Pyczar3()
-    czar.certificate_path = '/Users/jschroeder/.ssh/jschroeder.users.sfdc.net.cer'
-    czar.private_key_path = '/Users/jschroeder/.ssh/jschroeder.users.sfdc.net.key'
-    czar.vault = 'Q3PO'
-    print(czar.get_secret('SF_ORGID'))
