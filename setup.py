@@ -17,7 +17,7 @@ setup(name='pyczar3',
       license='SFDC',
       packages=find_packages(),
       install_requires=['cryptography', 'requests'],
-      setup_requires=['pytest-runner'],
+      # setup_requires=['pytest-runner'],
       tests_require=['pytest', 'responses', 'coverage'],
       scripts=[],
       entry_points={
@@ -25,4 +25,4 @@ setup(name='pyczar3',
                   'pyczar3 = pyczar3.cli:main'
             ]
       }
-      )
+)
