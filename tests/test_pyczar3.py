@@ -4,6 +4,7 @@ from base64 import urlsafe_b64encode
 
 import pytest
 import responses
+import cryptography.hazmat.backends.openssl
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, padding, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -13,7 +14,9 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import pyczar3
 
 
-class TestPczr3WithCertificates:
+@pytest.mark.skipif('1.0.2' not in cryptography.hazmat.backends.openssl.backend.openssl_version_text(),
+                    reason='RSA with OAEP (SHA-256/SHA-256 isn''t supported until 1.0.2+')
+class TestPyczar3WithCertificates:
 
     def setup_method(self):
         self.cert_path = 'tests/test_rsa.cer'
