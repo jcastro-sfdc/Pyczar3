@@ -110,7 +110,7 @@ class Pyczar3:
             #     Secret - The secret
             #     vaultName - Name of the vault returned by the server
             #     secretName - Name of the secret returned by the server
-            if 'Status' in resp and resp['Status'] == 'success':
+            if 'Status' in resp and resp['Status'].lower() == 'success':
                 # Key is an AES key which in turn is encrypted
                 # using mutual TLS's public key.
                 (symmetric_key, initialization_vector) = self._get_aes_key(resp['Key'])
@@ -122,7 +122,7 @@ class Pyczar3:
                 # returned_secret_name = plainjson["secretName"]
 
                 return cleartext_secret
-            elif resp['Status'] != 'Success':
+            elif resp['Status'].lower() != 'success':
                 raise RuntimeError(resp['status'])
 
     def _get_aes_key(self, key_1: str) -> Tuple[bytes, bytes]:
