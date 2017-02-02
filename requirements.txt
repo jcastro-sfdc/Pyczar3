@@ -1,3 +1,2 @@
-cryptography==1.7.1
+cryptography>=1.7.1
 requests==2.12.4
-python3-keyczar==0.71rc0
