@@ -93,7 +93,7 @@ class TestPyczar3WithCertificates:
         os.remove(self.key_path)
 
     @responses.activate
-    def test_get_password(self):
+    def test_get_secret(self):
 
         responses.add(responses.GET,
                       'https://ops-vaultczar1-1-crz.ops.sfdc.net:8271/vaultczar/api/1.0/'
@@ -112,7 +112,7 @@ class TestPyczar3WithCertificates:
 
 class TestPyczar3:
 
-    def test_get_password_without_vault(self):
+    def test_get_secret_without_vault(self):
         p = pyczar3.Pyczar3()
         with pytest.raises(RuntimeError):
             p.get_secret('MySecret')
