@@ -37,10 +37,11 @@ class Pyczar3:
         return self._vault_name
 
     @vault.setter
-    def vault(self, vault: str):
+    def vault(self, vault: str) -> None:
         """
         Set the vault name.
-        :param vault: Name of the vault
+
+        :param str vault: Name of the vault
         :return: None
         """
         self._vault_name = vault
@@ -49,16 +50,17 @@ class Pyczar3:
     def private_key_path(self) -> str:
         """
         The path to the private keys.
+
         :return: Path to the private keys.
         """
         return self._private_key_path
 
     @private_key_path.setter
-    def private_key_path(self, key_path: str):
+    def private_key_path(self, key_path: str) -> None:
         """
-        A file on disk.
+        Set a path to the private keys
 
-        :param key_path: Path to the keys.
+        :param str key_path: Path to the keys.
         :return: None
         """
         self._private_key_path = key_path
@@ -66,17 +68,18 @@ class Pyczar3:
     @property
     def certificate_path(self) -> str:
         """
-        The path to the private keys.
-        :return: Path to the private keys.
+        The path to the public certificate.
+
+        :return: Path to the public certificate.
         """
         return self._certificate_path
 
     @certificate_path.setter
-    def certificate_path(self, key_path: str):
+    def certificate_path(self, key_path: str) -> None:
         """
-        A file on disk.
+        Set a path to the public certificate.
 
-        :param key_path: Path to the keys.
+        :param str key_path: Path to public certificate.
         :return: None
         """
         self._certificate_path = key_path
@@ -84,7 +87,8 @@ class Pyczar3:
     def get_secret(self, secret_name: str) -> str:
         """
         Get a secret value.
-        :param secret_name: The name of the secret
+
+        :param str secret_name: The name of the secret
         :return: the secret value
         """
         if self._vault_name is None:
@@ -116,7 +120,7 @@ class Pyczar3:
                 (symmetric_key, initialization_vector) = self._get_aes_key(resp['Key'])
                 secretbytes = urlsafe_b64decode(resp['Secret'])
                 plainbytes = self._aes_decrypt(secretbytes, symmetric_key, initialization_vector)
-                plainjson = json.loads(plainbytes.decode('utf-8'))
+                plainjson = json.loads(plainbytes)
                 cleartext_secret = plainjson['Secret']
                 # returned_vault_name = plainjson["vaultName"]
                 # returned_secret_name = plainjson["secretName"]
@@ -125,10 +129,11 @@ class Pyczar3:
             elif resp['Status'].lower() != 'success':
                 raise RuntimeError(resp['status'])
 
-    def _get_aes_key(self, key_1: str) -> Tuple[bytes, bytes]:
+    def _get_aes_key(self, encrypted_key: str) -> Tuple[bytes, bytes]:
         """
-
-        :param key_1:
+        Decrypts a base64'd, encrypted JSON object that contains a symmetric ley and initialization vector.
+        These are used to construct the cipher needed to decrypt AES-
+        :param str encrypted_key: base64'd , encrypted JSON.
         :return: Tuple of (symmetric key, initialization vector)
         """
         with open(self.private_key_path, "rb") as key_file:
@@ -138,7 +143,7 @@ class Pyczar3:
                 backend=default_backend()
             )
 
-        ciphertext = urlsafe_b64decode(key_1)
+        ciphertext = urlsafe_b64decode(encrypted_key)
         plaintext = private_key.decrypt(
             ciphertext,
             OAEP(
@@ -154,14 +159,15 @@ class Pyczar3:
         return symmetric_key, initialization_vector
 
     @staticmethod
-    def _aes_decrypt(msg: bytes, symm_key: bytes, initialization_vector: bytes) -> bytes:
+    def _aes_decrypt(msg: bytes, symm_key: bytes, initialization_vector: bytes) -> str:
         """
-        Decrypt some bytes.
-        :param msg:
-        :param_type msg: bytes
-        :param symm_key: Symmetric Key
-        :param initialization_vector: Initialization Vector
+        Decrypt some ciphertext bytes with AES.
+
+        :param bytes msg: the input to decrypt.
+        :param bytes symm_key: Symmetric Key
+        :param bytes initialization_vector: Initialization Vector
         :return: plain text
+        :rtype: str
         """
         logging.debug('initializing AES-%d key with IV of %d bytes',
                       len(symm_key*8),
@@ -173,4 +179,4 @@ class Pyczar3:
         padded_data = decryptor.update(msg) + decryptor.finalize()
         unpadder = padding.PKCS7(128).unpadder()
         data = unpadder.update(padded_data) + unpadder.finalize()
-        return data
+        return data.decode('utf-8')
