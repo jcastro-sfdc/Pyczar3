@@ -131,7 +131,8 @@ class Pyczar3:
 
     def _get_aes_key(self, encrypted_key: str) -> Tuple[bytes, bytes]:
         """
-        Decrypts a base64'd, encrypted JSON object that contains a symmetric ley and initialization vector.
+        Decrypts a base64'd, encrypted JSON object that contains a symmetric key and
+        initialization vector.
         These are used to construct the cipher needed to decrypt AES-
         :param str encrypted_key: base64'd , encrypted JSON.
         :return: Tuple of (symmetric key, initialization vector)
