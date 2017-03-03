@@ -16,8 +16,8 @@ setup(name='pyczar3',
       url='https://git.soma.salesforce.com/Pyczar3',
       license='SFDC',
       packages=find_packages(),
-      install_requires=['cryptography', 'requests', 'python3-keyczar==0.71rc0'],
-      setup_requires=['pytest-runner'],
+      install_requires=['cryptography', 'requests'],
+      # setup_requires=['pytest-runner'],
       tests_require=['pytest', 'responses', 'coverage'],
       scripts=[],
       entry_points={
@@ -25,4 +25,4 @@ setup(name='pyczar3',
                   'pyczar3 = pyczar3.cli:main'
             ]
       }
-      )
+)

@@ -1,8 +1,7 @@
 Pyczar3
 =======
 
-A python 3.5+ fork of Pyczar.
-Why? Progress :)
+A Python 3.5+ fork of Pyczar that only supports certificate-based access. No more keypairs.
 
 
 Building this
