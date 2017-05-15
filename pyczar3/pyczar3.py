@@ -6,6 +6,7 @@ import logging
 from base64 import urlsafe_b64decode
 from typing import Tuple
 
+import pkg_resources
 import requests
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
@@ -84,6 +85,14 @@ class Pyczar3:
         """
         self._certificate_path = key_path
 
+    @staticmethod
+    def _ca_path() -> str:
+        """
+        Gets the path to the bundled CA_BUNDLE.
+        :return: str
+        """
+        return pkg_resources.resource_filename(__name__, 'certs/ca_bundle.crt')
+
     def get_secret(self, secret_name: str) -> str:
         """
         Get a secret value.
@@ -99,7 +108,10 @@ class Pyczar3:
                 'secretName': secret_name}
         self.logger.debug('Fetching secret "%s" from vault "%s"', secret_name, self._vault_name)
 
-        req = requests.get(url, params=body, cert=(self.certificate_path, self.private_key_path))
+        req = requests.get(url,
+                           params=body,
+                           cert=(self.certificate_path, self.private_key_path),  # client cert
+                           verify=self._ca_path())  # server cert
 
         if req.status_code == 200:
             resp = req.json()
