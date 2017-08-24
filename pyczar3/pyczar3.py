@@ -21,7 +21,7 @@ class Pyczar3:
     A class to access Secret Service secrets.
     """
 
-    def __init__(self, server_url='https://ops-vaultczar1-1-crz.ops.sfdc.net', server_port='8271'):
+    def __init__(self, server_url='https://secretservice.dmz.salesforce.com', server_port='8271'):
         self.logger = logging.getLogger(__name__)
         self.base_url = server_url
         self.port = server_port
