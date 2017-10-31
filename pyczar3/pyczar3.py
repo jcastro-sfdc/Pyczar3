@@ -1,19 +1,10 @@
 """
 A VaultCzar/Secret Service client.
 """
-import json
 import logging
-from base64 import urlsafe_b64decode
-from typing import Tuple
 
 import pkg_resources
 import requests
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import padding
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 
 class Pyczar3:
@@ -105,7 +96,8 @@ class Pyczar3:
         url = "%s:%s/%s" % (self.base_url, self.port, "vaultczar/api/1.0/getSecretBySubscriber")
         self.logger.debug(url)
         body = {'vaultName': self._vault_name,
-                'secretName': secret_name}
+                'secretName': secret_name,
+                'disableEncrypt': 'true'}
         self.logger.debug('Fetching secret "%s" from vault "%s"', secret_name, self._vault_name)
 
         req = requests.get(url,
@@ -117,79 +109,8 @@ class Pyczar3:
             resp = req.json()
             # Returns: JSON formatted response that includes:
             # Status - String indicating “success” or “failure”
-            # Key - Base64Url(Encryptpubkey(JSONString)) - JSON string containing two fields:
-            #     Key - The randomly generated symmetric key, base64Urled
-            #     IV - The randomly generated IV for symmetric encryption, base64Urled
-            # Secret - Base64Url(EncryptSymmetricKey(JSONString)) JSON string contains the
-            #          following fields:
-            #     secretID - The URI of the requested secret
-            #     Secret - The secret
-            #     vaultName - Name of the vault returned by the server
-            #     secretName - Name of the secret returned by the server
             if 'Status' in resp and resp['Status'].lower() == 'success':
-                # Key is an AES key which in turn is encrypted
-                # using mutual TLS's public key.
-                (symmetric_key, initialization_vector) = self._get_aes_key(resp['Key'])
-                secretbytes = urlsafe_b64decode(resp['Secret'])
-                plainbytes = self._aes_decrypt(secretbytes, symmetric_key, initialization_vector)
-                plainjson = json.loads(plainbytes)
-                cleartext_secret = plainjson['Secret']
-                # returned_vault_name = plainjson["vaultName"]
-                # returned_secret_name = plainjson["secretName"]
+                return resp['RawSecret']['Secret']
 
-                return cleartext_secret
             elif resp['Status'].lower() != 'success':
                 raise RuntimeError(resp['status'])
-
-    def _get_aes_key(self, encrypted_key: str) -> Tuple[bytes, bytes]:
-        """
-        Decrypts a base64'd, encrypted JSON object that contains a symmetric key and
-        initialization vector.
-        These are used to construct the cipher needed to decrypt AES-
-        :param str encrypted_key: base64'd , encrypted JSON.
-        :return: Tuple of (symmetric key, initialization vector)
-        """
-        with open(self.private_key_path, "rb") as key_file:
-            private_key = serialization.load_pem_private_key(
-                key_file.read(),
-                password=None,
-                backend=default_backend()
-            )
-
-        ciphertext = urlsafe_b64decode(encrypted_key)
-        plaintext = private_key.decrypt(
-            ciphertext,
-            OAEP(
-                mgf=MGF1(algorithm=hashes.SHA256()),
-                algorithm=hashes.SHA256(),
-                label=None
-            )
-        )
-
-        key_dictionary = json.loads(plaintext.decode('ascii'))
-        symmetric_key = urlsafe_b64decode(key_dictionary['Key'])
-        initialization_vector = urlsafe_b64decode(key_dictionary['IV'])
-        return symmetric_key, initialization_vector
-
-    @staticmethod
-    def _aes_decrypt(msg: bytes, symm_key: bytes, initialization_vector: bytes) -> str:
-        """
-        Decrypt some ciphertext bytes with AES.
-
-        :param bytes msg: the input to decrypt.
-        :param bytes symm_key: Symmetric Key
-        :param bytes initialization_vector: Initialization Vector
-        :return: plain text
-        :rtype: str
-        """
-        logging.debug('initializing AES-%d key with IV of %d bytes',
-                      len(symm_key*8),
-                      len(initialization_vector))
-        cipher = Cipher(algorithms.AES(symm_key),
-                        modes.CBC(initialization_vector),
-                        backend=default_backend())
-        decryptor = cipher.decryptor()
-        padded_data = decryptor.update(msg) + decryptor.finalize()
-        unpadder = padding.PKCS7(128).unpadder()
-        data = unpadder.update(padded_data) + unpadder.finalize()
-        return data.decode('utf-8')
