@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '0.9.1'
+version = '0.9.2'
 
 setup(name='pyczar3',
       version=version,
@@ -15,7 +15,7 @@ setup(name='pyczar3',
       url='https://git.soma.salesforce.com/Mobile/Pyczar3',
       license='SFDC',
       packages=find_packages(),
-      install_requires=['cryptography', 'requests'],
+      install_requires=['requests'],
       # setup_requires=['pytest-runner'],
       package_data={'pyczar3': ['certs/ca_bundle.crt']},
       tests_require=['pytest', 'responses', 'coverage'],
