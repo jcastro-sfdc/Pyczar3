@@ -113,4 +113,4 @@ class Pyczar3:
                 return resp['RawSecret']['Secret']
 
             elif resp['Status'].lower() != 'success':
-                raise RuntimeError(resp['status'])
+                raise RuntimeError(resp['Status'])
