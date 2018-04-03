@@ -114,3 +114,4 @@ class Pyczar3:
 
             elif resp['Status'].lower() != 'success':
                 raise RuntimeError(resp['Status'])
+        raise RuntimeError('non-200 response code ({0})'.format(req.status_code))
