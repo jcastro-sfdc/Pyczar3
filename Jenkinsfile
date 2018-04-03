@@ -26,6 +26,9 @@ node {
 
         stage('reports') {
             junit 'junit.xml'
+            withEnv(['NO_PROXY=.slb.sfdc.net']) {
+                sh 'curl -s --insecure https://codecov.moe.prd-sam.prd.slb.sfdc.net/bash | bash -s - -t 1e886856-66ac-4b26-ae79-9f1680987fe6 -s Mobile/Pyczar3 -v -Z -F unittests -f coverage.xml -U "--insecure"'
+            }
         }
 
     }
