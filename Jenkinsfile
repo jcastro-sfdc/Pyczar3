@@ -1,12 +1,12 @@
 #!groovy
-@Library('sfci-pipeline-sharedlib@v0.9.0') _
+@Library('sfci-pipeline-sharedlib@v0.14.19') _
 import net.sfdc.dci.BuildUtils
 
 def envDef = [ buildImage: 'ops0-artifactrepo1-0-prd.data.sfdc.net/mobile/sfci-python36:ca84abf' ]
-node {
     def BUILD_NUMBER=env.BUILD_NUMBER
 
     executePipeline(envDef) {
+        buildInit()
 
         stage('checkout') {
             checkout scm
@@ -31,5 +31,22 @@ node {
             }
         }
 
+        if (!BuildUtils.isPullRequestBuild(env)) {
+          stage('publish') {
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sfci-nexus', usernameVariable: 'ARTIFACTORY_USERNAME', passwordVariable: 'ARTIFACTORY_TOKEN']]) {
+                pypi_path = '~/.pypirc'
+                sh """
+                    echo '[distutils]' > ${pypi_path}
+                    echo 'index-servers = python-dev' >> ${pypi_path}
+                    echo '' >> ${pypi_path}
+                    echo '[python-dev]' >> ${pypi_path}
+                    echo 'repository: https://ops0-artifactrepo1-0-prd.data.sfdc.net/artifactory/api/pypi/python-dev' >> ${pypi_path}
+                    echo 'username: ${ARTIFACTORY_USERNAME}' >> ${pypi_path}
+                    echo 'password: ${ARTIFACTORY_TOKEN}' >> ${pypi_path}
+                """
+            }
+            sh 'python setup.py bdist_wheel upload -r python-dev'
+          }
+        }
     }
 }
