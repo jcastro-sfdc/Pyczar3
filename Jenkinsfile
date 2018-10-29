@@ -20,7 +20,9 @@ executePipeline(envDef) {
         withEnv(['HTTP_PROXY=http://public0-proxy1-0-prd.data.sfdc.net:8080',
                  'HTTPS_PROXY=http://public0-proxy1-0-prd.data.sfdc.net:8080',
                  'NO_PROXY=.force.com,.salesforce.com']) {
-            sh 'tox'
+            ansiColor('xterm') {
+                sh 'tox'
+            }
         }
     }
 

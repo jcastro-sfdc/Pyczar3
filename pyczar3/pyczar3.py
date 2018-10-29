@@ -111,7 +111,5 @@ class Pyczar3:
             # Status - String indicating “success” or “failure”
             if 'Status' in resp and resp['Status'].lower() == 'success':
                 return resp['RawSecret']['Secret']
-
-            elif resp['Status'].lower() != 'success':
-                raise RuntimeError(resp['Status'])
+            raise RuntimeError(resp['Status'])
         raise RuntimeError('non-200 response code ({0})'.format(req.status_code))
