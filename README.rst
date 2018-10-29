@@ -1,5 +1,7 @@
 Pyczar3
 =======
+.. image:: https://codecov.moe.prd-sam.prd.slb.sfdc.net/ghe/Mobile/pyczar3/branch/master/graph/badge.svg
+  :target: https://codecov.moe.prd-sam.prd.slb.sfdc.net/ghe/Mobile/pyczar3
 
 A Python 3.5+ fork of Pyczar that only supports certificate-based access. No more keypairs.
 
@@ -16,4 +18,3 @@ Testing this
 ------------
 
     tox
-
