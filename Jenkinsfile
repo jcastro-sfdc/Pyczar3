@@ -12,10 +12,6 @@ executePipeline(envDef) {
         checkout scm
     }
 
-    stage('install tools') {
-        sh 'sudo /opt/sfdc/python36/bin/pip install --proxy http://public0-proxy1-0-prd.data.sfdc.net:8080 -U tox'
-    }
-
     stage('test') {
         withEnv(['HTTP_PROXY=http://public0-proxy1-0-prd.data.sfdc.net:8080',
                  'HTTPS_PROXY=http://public0-proxy1-0-prd.data.sfdc.net:8080',
