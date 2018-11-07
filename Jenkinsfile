@@ -4,15 +4,23 @@ import net.sfdc.dci.BuildUtils
 
 def envDef = [ buildImage: 'ops0-artifactrepo1-0-prd.data.sfdc.net/mobile/sfci-python36:19697aa' ]
 def BUILD_NUMBER=env.BUILD_NUMBER
+def releaseParameters = {
+    parameters([
+        booleanParam( defaultValue: false,
+                      description: 'Do you want to release?',
+                      name: 'RELEASE')
+    ])
+}
+env.RELEASE_BRANCHES = ['master']
 
 executePipeline(envDef) {
     buildInit()
 
-    stage('checkout') {
+    stage('Checkout') {
         checkout scm
     }
 
-    stage('test') {
+    stage('Test') {
         withEnv(['HTTP_PROXY=http://public0-proxy1-0-prd.data.sfdc.net:8080',
                  'HTTPS_PROXY=http://public0-proxy1-0-prd.data.sfdc.net:8080',
                  'NO_PROXY=.force.com,.salesforce.com']) {
@@ -22,7 +30,7 @@ executePipeline(envDef) {
         }
     }
 
-    stage('reports') {
+    stage('Reports') {
         junit 'junit.xml'
         withEnv(['NO_PROXY=.slb.sfdc.net']) {
             ansiColor('xterm') {
@@ -31,13 +39,13 @@ executePipeline(envDef) {
         }
     }
 
-    if (!BuildUtils.isPullRequestBuild(env)) {
-      stage('publish') {
-        sh 'sudo /opt/sfdc/python36/bin/pip install --proxy http://public0-proxy1-0-prd.data.sfdc.net:8080 -U setuptools wheel twine'
+    if (BuildUtils.isReleaseBuild(env) && params.RELEASE) {
+      stage('Publish') {
+        sh '/opt/sfdc/python36/bin/pip install --user --proxy http://public0-proxy1-0-prd.data.sfdc.net:8080 -U setuptools wheel twine'
         sh '/opt/sfdc/python36/bin/python3 setup.py sdist bdist_wheel'
 
         withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sfci-docker', usernameVariable: 'TWINE_USERNAME', passwordVariable: 'TWINE_PASSWORD']]) {
-            sh 'twine upload --repository-url https://ops0-artifactrepo1-0-prd.data.sfdc.net/artifactory/api/pypi/python-dev dist/*'
+            sh '~/.local/bin/twine upload --repository-url https://ops0-artifactrepo1-0-prd.data.sfdc.net/artifactory/api/pypi/python-dev dist/*'
         }
       }
     }
