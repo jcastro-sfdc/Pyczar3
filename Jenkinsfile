@@ -2,7 +2,7 @@
 @Library('sfci-pipeline-sharedlib@v0.14.19') _
 import net.sfdc.dci.BuildUtils
 
-def envDef = [ buildImage: 'ops0-artifactrepo1-0-prd.data.sfdc.net/mobile/sfci-python36:19697aa' ]
+def envDef = [ buildImage: 'ops0-artifactrepo1-0-prd.data.sfdc.net/mobile/sfci-python36:sonar' ]
 def BUILD_NUMBER=env.BUILD_NUMBER
 def releaseParameters = {
     parameters([
@@ -36,6 +36,9 @@ executePipeline(envDef) {
             ansiColor('xterm') {
                 sh 'curl -s https://codecov.moe.prd-sam.prd.slb.sfdc.net/bash | bash -s - -Z -F unittests -f coverage.xml'
             }
+        }
+        withCredentials([string(credentialsId: 'SONARQUBE_TOKEN', variable: 'sonarlogin')]) {
+            sh "sonar-scanner -Dsonar.host.url=https://sonarqube.eng.sfdc.net -Dsonar.login=${sonarlogin}"
         }
     }
 
