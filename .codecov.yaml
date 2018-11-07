@@ -1,0 +1,9 @@
+codecov:
+  token: 1e886856-66ac-4b26-ae79-9f1680987fe6
+coverage:
+  status:
+    project:
+      default: false  # disable the default status that measures entire project
+      unittests:
+        flags: unittests
+    patch: off
