@@ -8,7 +8,7 @@ class TestPyczar3WithCertificates:
 
     @responses.activate
     def test_get_secret(self):
-        secret_value = "42"
+        secret_value = '42'
         secret_name = 'life'
         secret_vault = 'HHGTTG'
         server_response = {
@@ -25,8 +25,6 @@ class TestPyczar3WithCertificates:
                       content_type='application/json')
         p = pyczar3.Pyczar3()
         p.vault = secret_vault
-        # p.certificate_path = self.cert_path
-        # p.private_key_path = self.key_path
 
         assert secret_value == p.get_secret(secret_name)
 
