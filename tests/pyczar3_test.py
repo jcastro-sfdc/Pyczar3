@@ -17,8 +17,10 @@ class TestPyczar3WithCertificates:
         }
 
         responses.add(responses.GET,
-                      'https://secretservice.dmz.salesforce.com:8271/vaultczar/api/1.0/'
-                      'getSecretBySubscriber?secretName={0}&vaultName={1}&disableEncrypt=true'.format(secret_name, secret_vault),
+                      'https://secretservice.dmz.salesforce.com:8271/'
+                      'vaultczar/api/1.0/getSecretBySubscriber?secretName={0}'
+                      '&vaultName={1}&disableEncrypt=true'.format(
+                          secret_name, secret_vault),
                       match_querystring=True,
                       json=server_response,
                       status=200,
