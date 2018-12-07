@@ -117,4 +117,4 @@ class Pyczar3:
                 return resp['RawSecret']['Secret']
             raise RuntimeError(resp['Status'])
         raise RuntimeError('non-200 response code ({0})'.format(
-                           req.status_code))
+            req.status_code))
