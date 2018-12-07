@@ -90,14 +90,14 @@ executePipeline(envDef) {
     }
 
     if (BuildUtils.isReleaseBuild(env) && params.RELEASE) {
-      stage('Publish') {
-        sh '/opt/sfdc/python36/bin/pip install --user --proxy http://public0-proxy1-0-prd.data.sfdc.net:8080 -U setuptools wheel twine'
-        sh '/opt/sfdc/python36/bin/python3 setup.py sdist bdist_wheel'
+        stage('Publish') {
+            sh '/opt/sfdc/python36/bin/pip install --user --proxy http://public0-proxy1-0-prd.data.sfdc.net:8080 -U setuptools wheel twine'
+            sh '/opt/sfdc/python36/bin/python3 setup.py sdist bdist_wheel'
 
-        withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sfci-docker', usernameVariable: 'TWINE_USERNAME', passwordVariable: 'TWINE_PASSWORD']]) {
-            sh '~/.local/bin/twine upload --repository-url https://ops0-artifactrepo1-0-prd.data.sfdc.net/artifactory/api/pypi/python-dev dist/*'
+            withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'sfci-docker', usernameVariable: 'TWINE_USERNAME', passwordVariable: 'TWINE_PASSWORD']]) {
+                sh '~/.local/bin/twine upload --repository-url https://ops0-artifactrepo1-0-prd.data.sfdc.net/artifactory/api/pypi/python-dev dist/*'
+            }
         }
-      }
     }
 
     stage('GUS Compliance'){
