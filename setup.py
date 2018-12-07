@@ -18,9 +18,5 @@ setup(name='pyczar3',
       package_data={'pyczar3': ['certs/ca_bundle.crt']},
       tests_require=['pytest', 'responses', 'coverage'],
       scripts=[],
-      entry_points={
-            'console_scripts': [
-                  'pyczar3 = pyczar3.cli:main'
-            ]
-      }
-)
+      entry_points={'console_scripts': ['pyczar3 = pyczar3.cli:main']}
+      )

@@ -1,4 +1,4 @@
 """
 A VaultCzar/Secret Service client.
 """
-from pyczar3.pyczar3 import Pyczar3
+from pyczar3.pyczar3 import Pyczar3  # noqa: F401
