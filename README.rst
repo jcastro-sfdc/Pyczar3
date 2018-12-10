@@ -12,12 +12,31 @@ A Python 3.5+ fork of Pyczar that only supports certificate-based access. No mor
 Building this
 -------------
 
+::
+
     python setup.py test build bdist_wheel
 
-your wheel is in ``dist/pyczar3-{{version}}-py2.py3-none-any.whl``
+Your wheel is in ``dist/pyczar3-{{version}}-py2.py3-none-any.whl``
 
 
 Testing this
 ------------
 
+::
+
     tox
+
+
+Development
+-----------
+
+This project uses pre-commit_ project to run checks before you commit any code. Please use it!
+
+::
+
+    brew install pre-commit
+    precommit install
+
+Configuration is in ``.pre-commit-config.yaml``
+
+.. _pre-commit: https://pre-commit.com
