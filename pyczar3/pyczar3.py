@@ -12,7 +12,8 @@ class Pyczar3:
     A class to access Secret Service secrets.
     """
 
-    def __init__(self, server_url='https://secretservice.dmz.salesforce.com', server_port='8271'):
+    def __init__(self, server_url='https://secretservice.dmz.salesforce.com',
+                 server_port='8271'):
         self.logger = logging.getLogger(__name__)
         self.base_url = server_url
         self.port = server_port
@@ -93,16 +94,19 @@ class Pyczar3:
         """
         if self._vault_name is None:
             raise RuntimeError('Please set a vault name first')
-        url = "%s:%s/%s" % (self.base_url, self.port, "vaultczar/api/1.0/getSecretBySubscriber")
+        url = "%s:%s/%s" % (self.base_url, self.port,
+                            "vaultczar/api/1.0/getSecretBySubscriber")
         self.logger.debug(url)
         body = {'vaultName': self._vault_name,
                 'secretName': secret_name,
                 'disableEncrypt': 'true'}
-        self.logger.debug('Fetching secret "%s" from vault "%s"', secret_name, self._vault_name)
+        self.logger.debug('Fetching secret "%s" from vault "%s"',
+                          secret_name, self._vault_name)
 
         req = requests.get(url,
                            params=body,
-                           cert=(self.certificate_path, self.private_key_path),  # client cert
+                           cert=(self.certificate_path,  # client cert
+                                 self.private_key_path),
                            verify=self._ca_path())  # server cert
 
         if req.status_code == 200:
@@ -112,4 +116,5 @@ class Pyczar3:
             if 'Status' in resp and resp['Status'].lower() == 'success':
                 return resp['RawSecret']['Secret']
             raise RuntimeError(resp['Status'])
-        raise RuntimeError('non-200 response code ({0})'.format(req.status_code))
+        raise RuntimeError('non-200 response code ({0})'.format(
+            req.status_code))
