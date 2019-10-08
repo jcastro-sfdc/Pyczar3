@@ -1,10 +1,9 @@
 #!groovy
-@Library('sfci-pipeline-sharedlib@v0.14.19') _
+@Library('sfci-pipeline-sharedlib@master') _
 import net.sfdc.dci.BuildUtils
 import net.sfdc.dci.GitHubUtils
 
 
-def envDef = [ buildImage: 'ops0-artifactrepo1-0-prd.data.sfdc.net/mobile/sfci-python36:f3c3a84' ]
 def BUILD_NUMBER=env.BUILD_NUMBER
 def releaseParameters = {
     parameters([
@@ -14,6 +13,8 @@ def releaseParameters = {
     ])
 }
 env.RELEASE_BRANCHES = ['master']
+def envDef = [ buildImage: 'ops0-artifactrepo1-0-prd.data.sfdc.net/mobile/sfci-python36:f3c3a84',
+               releaseParameters: releaseParameters ]
 
 executePipeline(envDef) {
     buildInit()
@@ -38,8 +39,6 @@ executePipeline(envDef) {
             ansiColor('xterm') {
                 sh 'curl -s https://codecov.moe.prd-sam.prd.slb.sfdc.net/bash | bash -s - -Z -F unittests -f coverage.xml'
             }
-        }
-        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'sonarlogin')]) {
         }
     }
 
